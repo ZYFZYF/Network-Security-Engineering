@@ -5,14 +5,12 @@ import pandas as pd
 from dns import resolver
 from dnslib import DNSRecord
 
-target_addr = ('8.8.8.8', 53)
-client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
 
 def clean_dns(domain, verbose=True):
-    request = DNSRecord.question(domain)
+    target_addr = ('8.8.8.8', 53)
+    client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     send_time = time.time()
-    client.sendto(request.pack(), target_addr)
+    client.sendto(DNSRecord.question(domain).pack(), target_addr)
     client.settimeout(1)
     cnt = 0
     ret = ''
@@ -24,18 +22,34 @@ def clean_dns(domain, verbose=True):
             response, _ = client.recvfrom(1024)
             recv_time = time.time()
             ret = [str(x.rdata) for x in DNSRecord.parse(response).rr if x.rtype == 1]
-            # for x in DNSRecord.parse(response).rr:
-            #     import pdb;
-            #     pdb.set_trace()
-            # import pdb;
-            # pdb.set_trace()
             if verbose:
                 print(
                     '    {}th arrived, cost {}ms, response is {}'.format(cnt, int((recv_time - send_time) * 1000), ret))
     except socket.timeout as e:
         pass
+    finally:
+        client.close()
     if verbose:
         print('query end. result is {}'.format(ret))
+    return ret
+
+
+def dns_proxy(query):
+    target_addr = ('8.8.8.8', 53)
+    client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    client.sendto(query, target_addr)
+    client.settimeout(1)
+    cnt = 0
+    ret = ''
+    try:
+        while True:
+            cnt += 1
+            ret, _ = client.recvfrom(1024)
+    except socket.timeout as e:
+        pass
+    finally:
+        client.close()
+
     return ret
 
 
@@ -44,6 +58,8 @@ def direct_dns(domain):
         response = resolver.query(domain)
         return [y.address for x in response.response.answer for y in x.items if y.rdtype == 1]
     except resolver.NoAnswer as e:
+        return []
+    except resolver.NoNameservers as e:
         return []
 
 
@@ -58,7 +74,19 @@ def test():
         data.append(item)
         if ind % 10 == 0:
             print("process {}/{} and cost {}s".format(ind, len(lines), int(time.time() - start_time)))
-    pd.DataFrame(data=data, columns=['域名', '可达性', '直接查询ip地址', '无污染ip地址']).to_csv('domain2ip.csv', index=False)
+    pd.DataFrame(data=data, columns=['域名', '可达性', '直接查询ip地址', '无污染ip地址']).to_csv('domains2ips.csv', index=False)
+
+
+def serve():
+    while True:
+        server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        server.bind(('127.0.0.1', 53))
+        query, addr = server.recvfrom(1024)
+        print('receive a query for', DNSRecord.parse(query).questions)
+        response = dns_proxy(query)
+        print('get clean answer is', DNSRecord.parse(response))
+        server.sendto(response, addr)
+        server.close()
 
 
 if __name__ == '__main__':
@@ -66,3 +94,4 @@ if __name__ == '__main__':
     # print(', '.join(clean_dns(test_domain)))
     # print(', '.join(direct_dns(test_domain)))
     test()
+    # serve()

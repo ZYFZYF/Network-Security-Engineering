@@ -1,0 +1,4 @@
+requests==2.22.0
+pandas==0.25.1
+dnslib==0.9.10
+dnspython==1.16.0
