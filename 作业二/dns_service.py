@@ -80,7 +80,8 @@ def test():
 def serve():
     while True:
         server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        server.bind(('127.0.0.1', 53))
+        # server.bind(('127.0.0.1', 53))
+        server.bind(('192.168.1.105', 53))
         print('start to receive dns request...')
         query, addr = server.recvfrom(1024)
         print('receive a query for', DNSRecord.parse(query).questions)
