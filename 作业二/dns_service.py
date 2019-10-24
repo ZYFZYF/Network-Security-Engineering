@@ -81,6 +81,7 @@ def serve():
     while True:
         server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         server.bind(('127.0.0.1', 53))
+        print('start to receive dns request...')
         query, addr = server.recvfrom(1024)
         print('receive a query for', DNSRecord.parse(query).questions)
         response = dns_proxy(query)
@@ -93,5 +94,5 @@ if __name__ == '__main__':
     # test_domain = 'go.microsoft.com'
     # print(', '.join(clean_dns(test_domain)))
     # print(', '.join(direct_dns(test_domain)))
-    test()
-    # serve()
+    # test()
+    serve()
