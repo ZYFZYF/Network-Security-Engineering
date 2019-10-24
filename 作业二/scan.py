@@ -16,3 +16,6 @@ if __name__ == "__main__":
         # print(ind, domain)
         if ind % 20 == 0:
             print("process {}/{}".format(ind + 1, len(domains)))
+
+    t = open('wwww.txt', 'w')
+    t.writelines()
