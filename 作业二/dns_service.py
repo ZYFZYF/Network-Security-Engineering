@@ -86,7 +86,7 @@ def serve():
         query, addr = server.recvfrom(1024)
         print('receive a query for', DNSRecord.parse(query).questions)
         response = dns_proxy(query)
-        print('get clean answer is', DNSRecord.parse(response))
+        print('get clean answer is', DNSRecord.parse(response).)
         server.sendto(response, addr)
         server.close()
 
