@@ -26,8 +26,9 @@ class Cipher:
         self.aes_util = AESUtil()
 
     def encode(self, bs: bytes):
-        sign = self.rsa_util.sign(bs)
-        message = bs + sign
+        # sign = self.rsa_util.sign(bs)
+        # message = bs + sign
+        message = bs.copy()
         res = self.rsa_util.public_long_encrypt(message)
         res = self.aes_util.EncodeAES(res)
         # res = base64.urlsafe_b64encode(res)
@@ -37,12 +38,13 @@ class Cipher:
         # message = base64.urlsafe_b64decode(message)
         message = self.aes_util.DecodeAES(message)
         message = self.rsa_util.private_long_decrypt(message)
-        content = message[:-128]
-        sign = message[-128:]
-        verified = self.rsa_util.verify(content, sign)
-        if not verified:
-            print("verify failed!")
-            raise VerifyFailed
+        # content = message[:-128]
+        # sign = message[-128:]
+        content = message
+        # verified = self.rsa_util.verify(content, sign)
+        # if not verified:
+        #     print("verify failed!")
+        #     raise VerifyFailed
         return content
 
     # @classmethod
