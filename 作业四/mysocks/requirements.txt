@@ -1,1 +1,2 @@
-pycrypto
+pycrypto==2.6.1
+typing==3.7.4.1
