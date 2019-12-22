@@ -8,7 +8,7 @@ from cipher import Cipher, VerifyFailed
 
 logger = logging.getLogger(__name__)
 
-class local(SecureSocket):
+class Local(SecureSocket):
     def __init__(self, loop: asyncio.AbstractEventLoop, pub_key_path: str, pri_key_path: str, pub_key_path2: str, listenAddr: Address, remoteAddr: Address) -> None:
         super().__init__(loop, pub_key_path, pri_key_path, pub_key_path2)
         self.listenAddr = listenAddr
@@ -61,3 +61,17 @@ class local(SecureSocket):
                                                               err))
         return remoteConn
 
+def main():
+    loop = asyncio.get_event_loop()
+    listenAddr = Address('127.0.0.1', 1080)
+    remoteAddr = None
+    local = Local(loop, "rsa.pub", "rsa.key", "rsa.pub2", listenAddr, remoteAddr)
+
+    def didListen(address):
+        print('Listen to %s:%d\n' % address)
+
+    asyncio.ensure_future(local.listen(didListen))
+    loop.run_forever()
+
+if __name__ == "__main__":
+    main()

@@ -207,3 +207,17 @@ class Server(SecureSocket):
             asyncio.gather(
                 conn2dst, dst2conn, loop=self.loop, return_exceptions=True))
         task.add_done_callback(cleanUp)
+
+def main():
+    loop = asyncio.get_event_loop()
+    listenAddr = None
+    server = Server(loop, "rsa.pub2", "rsa.key2", "rsa.pub", listenAddr)
+
+    def didListen(address):
+        print('Listen to %s:%d\n' % address)
+
+    asyncio.ensure_future(server.listen(didListen))
+    loop.run_forever()
+
+if __name__ == "__main__":
+    main()
