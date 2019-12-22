@@ -66,9 +66,9 @@ class Local(SecureSocket):
 def main():
     loop = asyncio.get_event_loop()
     listenAddr = Address('127.0.0.1', 1080)
-    # server_ip = "198.13.40.33"
+    server_ip = "198.13.40.33"
     # server_ip = "192.69.89.211"
-    server_ip = "192.168.1.105"
+    # server_ip = "192.168.1.105"
     remoteAddr = Address(server_ip, 8848)
     local = Local(loop, "rsa.pub", "rsa.key", "rsa.pub2", listenAddr, remoteAddr)
 
