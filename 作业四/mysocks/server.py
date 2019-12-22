@@ -118,17 +118,23 @@ class Server(SecureSocket):
             # ipv4
             dstIP = socket.inet_ntop(socket.AF_INET, buf[4:4 + 4])
             dstAddress = Address(ip=dstIP, port=dstPort)
+            print('get ipv4 request %s:%s', dstIP, dstPort)
             dstFamily = socket.AF_INET
         elif buf[3] == 0x03:
             # domain
             dstIP = buf[5:-2].decode()
             dstAddress = Address(ip=dstIP, port=dstPort)
+            print('get domain request %s:%s', dstIP, dstPort)
+
         elif buf[3] == 0x04:
             # ipv6
             dstIP = socket.inet_ntop(socket.AF_INET6, buf[4:4 + 16])
             dstAddress = (dstIP, dstPort, 0, 0)
             dstFamily = socket.AF_INET6
+            print('get ipv6 request %s:%s', dstIP, dstPort)
+
         else:
+            print("something strange, close connection")
             connection.close()
             return
 
@@ -145,8 +151,10 @@ class Server(SecureSocket):
                     dstServer = None
         else:
             host, port = dstAddress
+            print('try to get ip of domain %s:%s', host, port)
             for res in await self.loop.getaddrinfo(host, port):
                 dstFamily, socktype, proto, _, dstAddress = res
+                print(f'get response dstFamily = {dstFamily}, socetType = {socktype} proto = {proto}')
                 try:
                     dstServer = socket.socket(dstFamily, socktype, proto)
                     dstServer.setblocking(False)

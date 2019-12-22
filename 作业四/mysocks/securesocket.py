@@ -26,7 +26,7 @@ class SecureSocket(object):
         return bs
 
     async def encodeWrite(self, conn: Connection, bs: bytes):
-        print('%s:%d encodeWrite %s', *conn.getsockname(), bytes(bs))
+        print('%s:%d encodeWrite %s', *conn.getsockname(), bytes(bs).decode('utf-8'))
         # bs = bs.copy()
         bs = self.cipher.encode(bs)
         await self.loop.sock_sendall(conn, bs)
