@@ -30,13 +30,13 @@ class Cipher:
         # message = bs + sign
         message = bs.copy()
         res = self.rsa_util.public_long_encrypt(message)
-        # res = self.aes_util.EncodeAES(res)
+        res = self.aes_util.EncodeAES(res)
         # res = base64.urlsafe_b64encode(res)
         return res
 
     def decode(self, message):
         # message = base64.urlsafe_b64decode(message)
-        # message = self.aes_util.DecodeAES(message)
+        message = self.aes_util.DecodeAES(message)
         message = self.rsa_util.private_long_decrypt(message)
         # content = message[:-128]
         # sign = message[-128:]
