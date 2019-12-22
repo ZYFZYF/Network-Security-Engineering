@@ -6,11 +6,9 @@ import logging
 from securesocket import SecureSocket, Address, Connection
 from cipher import Cipher, VerifyFailed
 
-logger = logging.getLogger(__name__)
-
 
 class Server(SecureSocket):
-    def __init__(self, loop: asyncio.AbstractEventLoop, pub_key_path: str, pri_key_path: str, 
+    def __init__(self, loop: asyncio.AbstractEventLoop, pub_key_path: str, pri_key_path: str,
                  pub_key_path2: str, listenAddr: Address) -> None:
         super().__init__(loop, pub_key_path, pri_key_path, pub_key_path2)
         self.listenAddr = listenAddr
@@ -24,13 +22,13 @@ class Server(SecureSocket):
             listener.bind(self.listenAddr)  # 服务器此处监听的应当是客户端发送的目标地址和端口
             listener.listen(socket.SOMAXCONN)
 
-            logger.info('Listen to %s:%d' % self.listenAddr)
+            print('Listen to %s:%d' % self.listenAddr)
             if didListen:
                 didListen(listener.getsockname())
 
             while True:  # 处理方法和客户端一样
                 connection, address = await self.loop.sock_accept(listener)
-                logger.info('Receive %s:%d', *address)
+                print('Receive %s:%d', *address)
                 asyncio.ensure_future(self.handleConn(connection))
 
     async def handleConn(self, connection: Connection):  # 握手完成之后要先用socks5协议来解析真正的访问目标
@@ -211,6 +209,7 @@ class Server(SecureSocket):
                 conn2dst, dst2conn, loop=self.loop, return_exceptions=True))
         task.add_done_callback(cleanUp)
 
+
 def main():
     loop = asyncio.get_event_loop()
     listenAddr = Address('0.0.0.0', 8388)
@@ -221,6 +220,7 @@ def main():
 
     asyncio.ensure_future(server.listen(didListen))
     loop.run_forever()
+
 
 if __name__ == "__main__":
     main()

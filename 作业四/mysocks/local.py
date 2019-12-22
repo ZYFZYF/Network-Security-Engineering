@@ -8,8 +8,9 @@ from cipher import Cipher, VerifyFailed
 
 logger = logging.getLogger(__name__)
 
+
 class Local(SecureSocket):
-    def __init__(self, loop: asyncio.AbstractEventLoop, pub_key_path: str, pri_key_path: str, 
+    def __init__(self, loop: asyncio.AbstractEventLoop, pub_key_path: str, pri_key_path: str,
                  pub_key_path2: str, listenAddr: Address, remoteAddr: Address) -> None:
         super().__init__(loop, pub_key_path, pri_key_path, pub_key_path2)
         self.listenAddr = listenAddr
@@ -35,7 +36,7 @@ class Local(SecureSocket):
 
     async def handleConn(self, connection: Connection):  # 通信建立之后就开始用两个协程在两边传东西
         remoteServer = await self.dialRemote()
-        
+
         def cleanUp(task):
             remoteServer.close()
             connection.close()
@@ -58,15 +59,14 @@ class Local(SecureSocket):
             remote_connection.setblocking(False)
             await self.loop.sock_connect(remote_connection, self.remoteAddr)
         except Exception as err:
-            raise ConnectionError('链接到远程服务器 %s:%d 失败:\n%r' % (*self.remoteAddr,
-                                                              err))
+            raise ConnectionError('链接到远程服务器 %s:%d 失败:\n%r' % (self.remoteAddr.ip, self.remoteAddr.port, err))
         return remote_connection
+
 
 def main():
     loop = asyncio.get_event_loop()
     listenAddr = Address('127.0.0.1', 1080)
-    #TODO: fill the addr
-    server_ip = ""
+    server_ip = "192.69.89.211"
     remoteAddr = Address(server_ip, 8388)
     local = Local(loop, "rsa.pub", "rsa.key", "rsa.pub2", listenAddr, remoteAddr)
 
@@ -75,6 +75,7 @@ def main():
 
     asyncio.ensure_future(local.listen(didListen))
     loop.run_forever()
+
 
 if __name__ == "__main__":
     main()
