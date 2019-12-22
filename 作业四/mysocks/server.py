@@ -8,30 +8,32 @@ from cipher import Cipher, VerifyFailed
 
 logger = logging.getLogger(__name__)
 
+
 class Server(SecureSocket):
-    def __init__(self, loop: asyncio.AbstractEventLoop, pub_key_path: str, pri_key_path: str, pub_key_path2: str, listenAddr: Address) -> None:
+    def __init__(self, loop: asyncio.AbstractEventLoop, pub_key_path: str, pri_key_path: str, 
+                 pub_key_path2: str, listenAddr: Address) -> None:
         super().__init__(loop, pub_key_path, pri_key_path, pub_key_path2)
         self.listenAddr = listenAddr
         aes_test = b'j(5\xf7!\xccv\xd8T\xf7\xa3\x9c\x13\xf9\x9e\xa0'
         self.cipher.aes_util.SetKey(aes_test)
 
-    async def listen(self, didListen: typing.Callable=None):
+    async def listen(self, didListen: typing.Callable = None):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
             listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             listener.setblocking(False)
-            listener.bind(self.listenAddr)
+            listener.bind(self.listenAddr)  # 服务器此处监听的应当是客户端发送的目标地址和端口
             listener.listen(socket.SOMAXCONN)
 
             logger.info('Listen to %s:%d' % self.listenAddr)
             if didListen:
                 didListen(listener.getsockname())
 
-            while True:
+            while True:  # 处理方法和客户端一样
                 connection, address = await self.loop.sock_accept(listener)
                 logger.info('Receive %s:%d', *address)
                 asyncio.ensure_future(self.handleConn(connection))
 
-    async def handleConn(self, connection: Connection):
+    async def handleConn(self, connection: Connection):  # 握手完成之后要先用socks5协议来解析真正的访问目标
         """
         Handle the connection from LsLocal.
         """
@@ -48,7 +50,7 @@ class Server(SecureSocket):
         NMETHODS field contains the number of method identifier octets that
         appear in the METHODS field.
         """
-        buf = await self.decodeRead(connection)
+        buf = await self.decodeRead(connection)  # 读一个socks5的request
         if not buf or buf[0] != 0x05:
             connection.close()
             return
@@ -74,7 +76,7 @@ class Server(SecureSocket):
 
         The client and server then enter a method-specific sub-negotiation.
         """
-        await self.encodeWrite(connection, bytearray((0x05, 0x00)))
+        await self.encodeWrite(connection, bytearray((0x05, 0x00)))  # 写回去的是不需要认证
         """
         The SOCKS request is formed as follows:
             +----+-----+-------+------+----------+----------+
@@ -98,7 +100,7 @@ class Server(SecureSocket):
           o  DST.PORT desired destination port in network octet
              order
         """
-        buf = await self.decodeRead(connection)
+        buf = await self.decodeRead(connection)  # 这次读到了真正的地址，开始建立与真正地址的连接
         if len(buf) < 7:
             connection.close()
             return
@@ -190,7 +192,7 @@ class Server(SecureSocket):
         """
         await self.encodeWrite(connection,
                                bytearray((0x05, 0x00, 0x00, 0x01, 0x00, 0x00,
-                                          0x00, 0x00, 0x00, 0x00)))
+                                          0x00, 0x00, 0x00, 0x00)))  # 告诉对方已经建立了？
 
         def cleanUp(task):
             """
@@ -199,6 +201,7 @@ class Server(SecureSocket):
             dstServer.close()
             connection.close()
 
+        # 开启两个协程在两者之间传递信息
         conn2dst = asyncio.ensure_future(
             self.decodeCopy(dstServer, connection))
         dst2conn = asyncio.ensure_future(
@@ -210,7 +213,7 @@ class Server(SecureSocket):
 
 def main():
     loop = asyncio.get_event_loop()
-    listenAddr = None
+    listenAddr = Address('0.0.0.0', 8388)
     server = Server(loop, "rsa.pub2", "rsa.key2", "rsa.pub", listenAddr)
 
     def didListen(address):
