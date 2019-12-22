@@ -48,8 +48,10 @@ class Server(SecureSocket):
         NMETHODS field contains the number of method identifier octets that
         appear in the METHODS field.
         """
+        print('prepare to establish socks5')
         buf = await self.decodeRead(connection)  # 读一个socks5的request
         if not buf or buf[0] != 0x05:
+            print('not version 5, so close the connection')
             connection.close()
             return
         """
@@ -100,10 +102,12 @@ class Server(SecureSocket):
         """
         buf = await self.decodeRead(connection)  # 这次读到了真正的地址，开始建立与真正地址的连接
         if len(buf) < 7:
+            print('length is not enough, so close connection')
             connection.close()
             return
 
         if buf[1] != 0x01:
+            print('??? [1] is not 1, so close connection')
             connection.close()
             return
 

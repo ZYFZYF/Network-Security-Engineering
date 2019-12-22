@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="50a56e82-42ee-4f46-b38f-32cb91f742b2" name="kun_server" url="http://198.13.40.33">
+        <fileTransfer host="198.13.40.33" port="22" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+      <webServer id="b9a428a6-e61a-4c5f-bf38-b4400c2fffb5" name="hang_server" url="http://192.69.89.211">
+        <fileTransfer host="192.69.89.211" port="26028" rootFolder="/root/Network-Security-Engineering/作业四/mysocks" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="26028" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

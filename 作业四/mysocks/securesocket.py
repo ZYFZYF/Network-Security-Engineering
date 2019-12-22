@@ -20,15 +20,15 @@ class SecureSocket(object):
 
     async def decodeRead(self, conn: Connection):
         data = await self.loop.sock_recv(conn, BUFFER_SIZE)
-        bs = bytes(data)
-        bs = self.cipher.decode(bs)
+        bs = bytearray(data)
+        self.cipher.decode(bs)
         print('%s:%d decodeRead %r', *conn.getsockname(), bs)
         return bs
 
     async def encodeWrite(self, conn: Connection, bs: bytes):
-        print('%s:%d encodeWrite %s', *conn.getsockname(), bytes(bs).decode('utf-8'))
-        # bs = bs.copy()
-        bs = self.cipher.encode(bs)
+        print('%s:%d encodeWrite %s', *conn.getsockname(), bytes(bs))
+        bs = bs.copy()
+        self.cipher.encode(bs)
         await self.loop.sock_sendall(conn, bs)
 
     async def encodeCopy(self, dst: Connection, src: Connection):

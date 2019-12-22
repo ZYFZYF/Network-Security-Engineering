@@ -8,8 +8,23 @@ from Crypto.Signature import PKCS1_v1_5 as Signature_pkcs1_v1_5
 from rsa import RsaUtil
 from aes import AESUtil
 
+encodePassword = bytearray(range(256))
+for i in range(256):
+    temp = encodePassword[i]
+    encodePassword[i] = encodePassword[i * i % 256]
+    encodePassword[i * i % 256] = temp
+
+decodePassword = encodePassword.copy()
+for i, v in enumerate(encodePassword):
+    decodePassword[v] = i
+
+print(encodePassword)
+print(decodePassword)
+
+
 class VerifyFailed(Exception):
     """认证失败"""
+
 
 class Cipher:
     def __init__(self, pub_key_path: str, pri_key_path: str, pub_key_path2: str) -> None:
@@ -25,24 +40,42 @@ class Cipher:
         self.rsa_util = RsaUtil(self.pub_key, self.pri_key, self.pub_key_2)
         self.aes_util = AESUtil()
 
-    def encode(self, bs: bytes):
-        sign = self.rsa_util.sign(bs)
-        message = bs + sign
-        res = self.rsa_util.public_long_encrypt(message)
-        res = self.aes_util.EncodeAES(res)
-        res = base64.urlsafe_b64encode(res)
-        return res
+    def encode(self, bs: bytearray):
+        for i, v in enumerate(bs):
+            bs[i] = encodePassword[v]
 
-    def decode(self, message):
-        message = base64.urlsafe_b64decode(message)
-        message = self.aes_util.DecodeAES(message)
-        message = self.rsa_util.private_long_decrypt(message)
-        content = message[:-128]
-        sign = message[-128:]
-        verified = self.rsa_util.verify(content, sign)
-        if not verified:
-            raise VerifyFailed
-        return content
+    def decode(self, bs: bytearray):
+        for i, v in enumerate(bs):
+            bs[i] = decodePassword[v]
+
+    # def encode(self, bs: bytes):
+    #     for i, v in enumerate(bs):
+    #         if v == 255:
+    #             bs[i] = 0
+    #         else:
+    #             bs[i] = v + 1
+    # sign = self.rsa_util.sign(bs)
+    # message = bs + sign
+    # res = self.rsa_util.public_long_encrypt(message)
+    # res = self.aes_util.EncodeAES(res)
+    # #res = base64.urlsafe_b64encode(res)
+    # return res
+
+    # def decode(self, bs):
+    #     for i, v in enumerate(bs):
+    #         if v == 0:
+    #             bs[i] = 255
+    #         else:
+    #             bs[i] = v - 1
+    # message = base64.urlsafe_b64decode(message)
+    # message = self.aes_util.DecodeAES(message)
+    # message = self.rsa_util.private_long_decrypt(message)
+    # content = message[:-128]
+    # sign = message[-128:]
+    # verified = self.rsa_util.verify(content, sign)
+    # if not verified:
+    #     raise VerifyFailed
+    # return content
 
     # @classmethod
     # def NewCipher(cls, pub_path: str, pri_path: str, pub_path2: str):

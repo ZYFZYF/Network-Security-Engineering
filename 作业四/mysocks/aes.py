@@ -16,6 +16,7 @@ class AESUtil:
 
     def AESPad(self, s: bytes) -> bytes:
         length = len(s)
+        print('aes pad %d',length)
         pad = b' '
         if (length % 16) == 0:
             s = s + pad * 15 + chr(16).encode()
