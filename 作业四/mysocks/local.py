@@ -34,9 +34,9 @@ class local(SecureSocket):
                 logger.info('Receive %s:%d', *address)
                 asyncio.ensure_future(self.handleConn(connection))
 
-    async def handleConn(self, connection: Connection):
+    async def handleConn(self, connection: Connection):  # 通信建立之后就开始用两个协程在两边传东西
         remoteServer = await self.dialRemote()
-
+        
         def cleanUp(task):
             remoteServer.close()
             connection.close()
@@ -53,12 +53,11 @@ class local(SecureSocket):
                 return_exceptions=True))
         task.add_done_callback(cleanUp)
 
-    async def dialRemote(self):
+    async def dialRemote(self):  # 创建到墙外服务器的连接
         try:
-            remoteConn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            remoteConn.setblocking(False)
-            await self.loop.sock_connect(remoteConn, self.remoteAddr)
+            remote_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            remote_connection.setblocking(False)
+            await self.loop.sock_connect(remote_connection, self.remoteAddr)
         except Exception as err:
-            raise ConnectionError('链接到远程服务器 %s:%d 失败:\n%r' % (*self.remoteAddr,
-                                                              err))
-        return remoteConn
+            raise ConnectionError('连接到远程服务器 %s:%d 失败:\n%r' % (self.remoteAddr.ip, self.remoteAddr.port, err))
+        return remote_connection
