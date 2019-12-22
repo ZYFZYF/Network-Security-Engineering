@@ -3,18 +3,17 @@ import socket
 import asyncio
 import logging
 
-from lightsocks.core.cipher import Cipher
-from securesocket import SecureSocket, Address
+from securesocket import SecureSocket, Address, Connection
+from cipher import Cipher, VerifyFailed
 
-Connection = socket.socket
 logger = logging.getLogger(__name__)
 
-class LsServer(SecureSocket):
-    def __init__(self,
-                 loop: asyncio.AbstractEventLoop,
-                 listenAddr: Address) -> None:
-        super().__init__(loop=loop)
+class Server(SecureSocket):
+    def __init__(self, loop: asyncio.AbstractEventLoop, pub_key_path: str, pri_key_path: str, pub_key_path2: str, listenAddr: Address) -> None:
+        super().__init__(loop, pub_key_path, pri_key_path, pub_key_path2)
         self.listenAddr = listenAddr
+        aes_test = b'j(5\xf7!\xccv\xd8T\xf7\xa3\x9c\x13\xf9\x9e\xa0'
+        self.cipher.aes_util.SetKey(aes_test)
 
     async def listen(self, didListen: typing.Callable=None):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
@@ -118,12 +117,12 @@ class LsServer(SecureSocket):
         if buf[3] == 0x01:
             # ipv4
             dstIP = socket.inet_ntop(socket.AF_INET, buf[4:4 + 4])
-            dstAddress = net.Address(ip=dstIP, port=dstPort)
+            dstAddress = Address(ip=dstIP, port=dstPort)
             dstFamily = socket.AF_INET
         elif buf[3] == 0x03:
             # domain
             dstIP = buf[5:-2].decode()
-            dstAddress = net.Address(ip=dstIP, port=dstPort)
+            dstAddress = Address(ip=dstIP, port=dstPort)
         elif buf[3] == 0x04:
             # ipv6
             dstIP = socket.inet_ntop(socket.AF_INET6, buf[4:4 + 16])
