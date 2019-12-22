@@ -44,27 +44,30 @@ class Cipher:
             raise VerifyFailed
         return content
 
-    @classmethod
-    def NewCipher(cls, pub_path: str, pri_path: str, pub_path2: str):
-        return cls(pub_path, pri_path, pub_path2)
+    # @classmethod
+    # def NewCipher(cls, pub_path: str, pri_path: str, pub_path2: str):
+    #     return cls(pub_path, pri_path, pub_path2)
 
-def main():
-    cipher1 = Cipher("rsa.pub", "rsa.key", "rsa.pub2")
-    cipher2 = Cipher("rsa.pub2", "rsa.key2", "rsa.pub")
-    key = cipher1.aes_util.GenerateKey()
-    cipher2.aes_util.SetKey(key)
-    text = b"this is a new test"
-    # sign = cipher1.rsa_util.sign(text)
-    # print(sign, len(sign))
-    # print(cipher2.rsa_util.verify(text, sign))
-    # encoded = cipher1.aes_util.EncodeAES(text)
-    # print(encoded)
-    # decoded = cipher2.aes_util.DecodeAES(encoded)
-    # print(decoded)
-    encoded = cipher1.encode(text)
-    print(encoded)
-    decoded = cipher2.decode(encoded)
-    print(decoded)
+# def main():
+#     cipher1 = Cipher("rsa.pub", "rsa.key", "rsa.pub2")
+#     cipher2 = Cipher("rsa.pub2", "rsa.key2", "rsa.pub")
+#     key = cipher1.aes_util.GenerateKey()
+#     cipher2.aes_util.SetKey(key)
+#     text = b"this is a new test"
+#     print(type(text))
+#     # sign = cipher1.rsa_util.sign(text)
+#     # print(sign, len(sign))
+#     # print(cipher2.rsa_util.verify(text, sign))
+#     # encoded = cipher1.aes_util.EncodeAES(text)
+#     # print(encoded)
+#     # decoded = cipher2.aes_util.DecodeAES(encoded)
+#     # print(decoded)
+#     encoded = cipher1.encode(text)
+#     print(encoded)
+#     print(type(encoded))
+#     decoded = cipher2.decode(encoded)
+#     print(type(decoded))
+#     print(decoded)
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

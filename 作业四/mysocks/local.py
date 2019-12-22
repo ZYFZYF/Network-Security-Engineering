@@ -3,9 +3,8 @@ import socket
 import asyncio
 import logging
 
-from securesocket import SecureSocket, Address
-
-Connection = socket.socket
+from securesocket import SecureSocket, Address, Connection
+from cipher import Cipher, VerifyFailed
 logger = logging.getLogger(__name__)
 
 class local(SecureSocket):
