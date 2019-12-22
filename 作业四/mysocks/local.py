@@ -8,8 +8,10 @@ from cipher import Cipher, VerifyFailed
 
 logger = logging.getLogger(__name__)
 
+
 class local(SecureSocket):
-    def __init__(self, loop: asyncio.AbstractEventLoop, pub_key_path: str, pri_key_path: str, pub_key_path2: str, listenAddr: Address, remoteAddr: Address) -> None:
+    def __init__(self, loop: asyncio.AbstractEventLoop, pub_key_path: str, pri_key_path: str, pub_key_path2: str,
+                 listenAddr: Address, remoteAddr: Address) -> None:
         super().__init__(loop, pub_key_path, pri_key_path, pub_key_path2)
         self.listenAddr = listenAddr
         self.remoteAddr = remoteAddr
@@ -17,10 +19,10 @@ class local(SecureSocket):
         self.cipher.aes_util.SetKey(aes_test)
 
     async def listen(self, didListen: typing.Callable = None):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
-            listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            listener.bind(self.listenAddr)
-            listener.listen(socket.SOMAXCONN)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:  # 设置监听网络TCP请求
+            listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # 打开地址重用
+            listener.bind(self.listenAddr)  # 将socket与监听地址绑定，所有发送到这个地址的都会被我们的local读取和使用
+            listener.listen(socket.SOMAXCONN)  # 进行完 tcp 三次握手之后，相应的连接会放到服务器相应 socket 的队列，此处设置的就是队列大小（本质上相当于没设）
             listener.setblocking(False)
 
             logger.info('Listen to %s:%d' % self.listenAddr)
@@ -28,7 +30,7 @@ class local(SecureSocket):
                 didListen(listener.getsockname())
 
             while True:
-                connection, address = await self.loop.sock_accept(listener)
+                connection, address = await self.loop.sock_accept(listener)  # 从握手完成的里面选取一个，开始与墙外服务器建立通信
                 logger.info('Receive %s:%d', *address)
                 asyncio.ensure_future(self.handleConn(connection))
 
@@ -60,4 +62,3 @@ class local(SecureSocket):
             raise ConnectionError('链接到远程服务器 %s:%d 失败:\n%r' % (*self.remoteAddr,
                                                               err))
         return remoteConn
-
