@@ -20,7 +20,7 @@ class SecureSocket(object):
 
     async def decodeRead(self, conn: Connection):
         data = await self.loop.sock_recv(conn, BUFFER_SIZE)
-        bs = bytearray(data)
+        bs = bytes(data)
         bs = self.cipher.decode(bs)
         print('%s:%d decodeRead %r', *conn.getsockname(), bs)
         return bs
