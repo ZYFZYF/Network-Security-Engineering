@@ -5,7 +5,7 @@ import logging
 from collections import namedtuple
 from cipher import Cipher, VerifyFailed
 
-BUFFER_SIZE = 1024
+BUFFER_SIZE = 4096
 Address = namedtuple('Address', 'ip port')
 Connection = socket.socket
 
@@ -21,9 +21,9 @@ class SecureSocket(object):
     async def decodeRead(self, conn: Connection):
         data = await self.loop.sock_recv(conn, BUFFER_SIZE)
         bs = bytes(data)
-        bs = self.cipher.decode(bs)
-        print('%s:%d decodeRead %r', *conn.getsockname(), bs)
-        return bs
+        ba = bytearray(self.cipher.decode(bs))
+        print('%s:%d decodeRead %r', *conn.getsockname(), ba)
+        return ba
 
     async def encodeWrite(self, conn: Connection, bs: bytearray):
         print('%s:%d encodeWrite %s', *conn.getsockname(), bytearray(bs))
